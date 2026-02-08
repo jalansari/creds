@@ -94,7 +94,11 @@ rm -rf "$AwsCredsPath/cli"
 key_id=$( gpg --list-secret-keys --with-colons | awk -F: '/^sec/ { print $5 }' )
 gpg --armor --export-secret-key $key_id > "$gpg_key"
 
-tar -czf "$compressed_file_prefix$compressed_file_extension" \
+datetime_stamp=$(date +"%Y%m%d-T%H%M%S")
+
+compressed_filename="$compressed_file_prefix-$datetime_stamp$compressed_file_extension"
+
+tar -czf "$compressed_filename" \
     "$AwsCredsPath" "$SshPath" \
     "$BashHistory" "$MySqlHistory" "$PsqlHistory" \
     "$gpg_key" \
@@ -104,9 +108,9 @@ rm -r "$gpg_key"
 
 read -sp "Enter encryption password: " ZipPasswd
 echo
-gpg -c --batch --yes --passphrase "$ZipPasswd" "$compressed_file_prefix$compressed_file_extension"
+gpg -c --batch --yes --passphrase "$ZipPasswd" "$compressed_filename"
 
-PRINTLOG "CREATED : $compressed_file_prefix$compressed_file_extension$compressed_file_extension_enc"
+PRINTLOG "CREATED : $compressed_filename$compressed_file_extension_enc"
 
 
 
