@@ -41,7 +41,10 @@ additional_dirs_list=()
 
 while [[ -n "$1" ]]; do
     case $1 in
-        -x ) doExtract=true ;;
+        -x ) doExtract=true
+             shift
+             specified_file="$1"
+             break ;;
         -a ) shift
              addDirs="$1" ;;
         * ) PRINT_ERROR "Usage: $0 [-x] [-a <additional_dirs>]"
@@ -123,12 +126,16 @@ else
 
 
 compressed_file=
-
-for file_name in creds*; do
-    if [[ "$file_name" =~ ^$compressed_file_prefix.*$compressed_file_extension_enc$ ]]; then
-        compressed_file="$file_name"
+if [[ -n "$specified_file" ]]; then
+    if [[ -f "$specified_file" ]]; then
+        compressed_file="$specified_file"
+    else
+        PRINT_ERROR "ERROR: Specified file '$specified_file' not found."
+        exit 1
     fi
-done
+else
+    compressed_file=$(ls -t ${compressed_file_prefix}*${compressed_file_extension_enc} 2>/dev/null | head -n 1)
+fi
 
 uncompress_to_file="${compressed_file%.*}"
 
